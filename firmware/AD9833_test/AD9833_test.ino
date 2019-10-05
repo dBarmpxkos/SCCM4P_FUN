@@ -10,6 +10,6 @@ void setup(){
 
 void loop(){
 
-if (monitor_serial() == 0)
-    waveform_settings();
+    monitor_serial();
+    
 }

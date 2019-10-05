@@ -1,8 +1,8 @@
 #include <AD9833.h>        
 #include <ArduinoJson.h>
 
-#define FNC_PIN       10       // Any digital pin. Used to enable SPI transfers (active LO  
-#define LED_PIN       13      // I'm alive blinker 
+#define FNC_PIN       10
+#define LED_PIN       13
 
 AD9833 gen(FNC_PIN);
 
@@ -23,31 +23,7 @@ static void flush_serial_input(void){
 static void blink_LED(void){
     digitalWrite(LED_PIN, digitalRead(LED_PIN) == HIGH ? LOW : HIGH);
 }
-
-int8_t monitor_serial(void) {
-
-    int8_t settingsType = -1;
-    if (Serial.available() > 0) {
-
-        char cmd = Serial.read();
-        if (cmd == '>') {
-            cmd = Serial.read();
-
-            switch (cmd) {
-                case 'W':
-                    settingsType = 0;
-                    break;
-                case 'S':
-                    settingsType = 1;
-                    break;
-                default:
-                    Serial.println(F("Error in settings type"));
-                    break;
-            }
-        }
-    }
-    return settingsType;
-}
+/* helper functions */
 
 bool waveform_settings(void) {
     StaticJsonDocument<200> JSONSettings;
@@ -58,14 +34,16 @@ bool waveform_settings(void) {
         Serial.println(error.c_str());
         return;
     }
-    bool enable = JSONSettings["en"];
 
+    bool enable = JSONSettings["en"];
+    Serial.print(F("[JSONSettings[en]]: ")); Serial.println(enable);
     if (!enable)
         gen.EnableOutput(false);
     
     else {
         Registers outputRegister;
-        unsigned int incomingRegister;
+        unsigned int incomingRegister = JSONSettings["reg"];
+        Serial.print(F("[JSONSettings[reg]]: ")); Serial.println(incomingRegister);
         switch ( incomingRegister ) {
             case 0:
                 outputRegister = REG0;
@@ -79,7 +57,8 @@ bool waveform_settings(void) {
         } 
 
         WaveformType waveType;
-        unsigned int incomingWave;
+        unsigned int incomingWave = JSONSettings["wave"];
+        Serial.print(F("[JSONSettings[waveType]]: ")); Serial.println(incomingWave);
         switch ( incomingWave ) {
             case 0:
                 waveType = SINE_WAVE;
@@ -96,49 +75,52 @@ bool waveform_settings(void) {
         } 
 
         float frequency = JSONSettings["freq"];
+        Serial.print(F("[JSONSettings[frequency]]: ")); Serial.println(frequency);
+
         float phase     = JSONSettings["phase"];
+        Serial.print(F("[JSONSettings[phase]]: ")); Serial.println(phase);
+
         gen.ApplySignal(waveType, outputRegister, frequency, 
                         outputRegister, phase);
-        gen.SetOutputSource(outputRegister);
 
     }
+}
+
+
+bool currentsource_settings(void) {
+
+    return 1;
+
+}
+
+int8_t monitor_serial(void) {
+
+    int8_t settingsType = -1;
+
+    if (Serial.available() > 0) {
+        char cmd = Serial.read();
+        /* if first char is indicating that settings are coming */
+        if (cmd == '>') {   
+            cmd = Serial.read();
+            /* read next char; W: waveform settings - S: current source settings */
+            switch (cmd) {
+                case 'W':
+                    settingsType = 0;
+                    waveform_settings();
+                    Serial.println(F("waveform_settings()"));
+                    break;
+                case 'S':
+                    settingsType = 1;
+                    currentsource_settings();
+                    Serial.println(F("currentsource_settings()"));
+                    break;
+                default:
+                    Serial.println(F("Error in settings type"));
+                    break;
+            }
+        }
+    }
+    return settingsType;
 }
 
 /* helper functions */
-
-/*
- * Show the requested versus actual programmed values for frequency and phase
- * Also show resolution, max frequency (based on refFrequency)
- */
-void RequestedvsProgrammedValues ( void ) {
-  
-    float requestedFrequency, programmedFrequency;
-    char  buffer[20];   // 14 characters actually needed for display    
-
-    gen.ApplySignal(SINE_WAVE,REG0,1000.0);
-    
-    while ( true ) {
-      
-        flush_serial_input();
-  
-        Serial.println(F("\nEnter frequency ('Q' to quit) >"));
-        while ( !Serial.available() ){
-            blink_LED();
-        }   
-
-        if ( toupper(Serial.peek()) == 'Q' ) {
-            // Need an extra <CR> ?
-            flush_serial_input();    // why isn't this flushing input?
-            return;
-        }
-        requestedFrequency = Serial.parseFloat();
-        gen.SetFrequency(REG0,requestedFrequency);
-        programmedFrequency = gen.GetActualProgrammedFrequency(REG0);
-        Serial.print(F("Requested :"));
-        dtostrf(requestedFrequency,14,5,buffer); 
-        Serial.print(buffer);
-        Serial.print(F("   Actual :"));
-        dtostrf(programmedFrequency,14,5,buffer); 
-        Serial.println(buffer);       
-    }
-}
