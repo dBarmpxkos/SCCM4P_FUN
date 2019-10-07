@@ -38,7 +38,7 @@ bool waveform_settings(void) {
     bool enable = JSONSettings["en"];
     Serial.print(F("[JSONSettings[en]]: ")); Serial.println(enable);
     if (!enable)
-        gen.EnableOutput(false);
+        gen.EnableOutput(enable);
     
     else {
         Registers outputRegister;
@@ -82,6 +82,8 @@ bool waveform_settings(void) {
 
         gen.ApplySignal(waveType, outputRegister, frequency, 
                         outputRegister, phase);
+        gen.SetOutputSource(outputRegister);
+        gen.EnableOutput(enable);
 
     }
 }
@@ -101,6 +103,10 @@ int8_t monitor_serial(void) {
         char cmd = Serial.read();
         /* if first char is indicating that settings are coming */
         if (cmd == '>') {   
+            Serial.println(F("first char received"));
+            while (!Serial.available()){
+                delay(5);
+            }
             cmd = Serial.read();
             /* read next char; W: waveform settings - S: current source settings */
             switch (cmd) {
