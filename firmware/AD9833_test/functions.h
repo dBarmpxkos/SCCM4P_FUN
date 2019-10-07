@@ -30,20 +30,20 @@ bool waveform_settings(void) {
 
     DeserializationError error = deserializeJson(JSONSettings, Serial);
     if (error) {
-        Serial.print(F("deserializeJson() failed: "));
+        Serial.print(F("[err]: deserializeJson() failed: "));
         Serial.println(error.c_str());
         return;
     }
 
     bool enable = JSONSettings["en"];
-    Serial.print(F("[JSONSettings[en]]: ")); Serial.println(enable);
+    Serial.print(F("[JSONSettings][en]: ")); Serial.println(enable);
     if (!enable)
         gen.EnableOutput(enable);
     
     else {
         Registers outputRegister;
         unsigned int incomingRegister = JSONSettings["reg"];
-        Serial.print(F("[JSONSettings[reg]]: ")); Serial.println(incomingRegister);
+        Serial.print(F("[JSONSettings][reg]: ")); Serial.println(incomingRegister);
         switch ( incomingRegister ) {
             case 0:
                 outputRegister = REG0;
@@ -52,13 +52,13 @@ bool waveform_settings(void) {
                 outputRegister = REG1;
                 break;  
             default:
-                Serial.println(F("Error in register setting"));
+                Serial.println(F("[err]: error in register setting"));
                 break;                    
         } 
 
         WaveformType waveType;
         unsigned int incomingWave = JSONSettings["wave"];
-        Serial.print(F("[JSONSettings[waveType]]: ")); Serial.println(incomingWave);
+        Serial.print(F("[JSONSettings][waveType]: ")); Serial.println(incomingWave);
         switch ( incomingWave ) {
             case 0:
                 waveType = SINE_WAVE;
@@ -70,15 +70,15 @@ bool waveform_settings(void) {
                 waveType = SQUARE_WAVE;
                 break;  
             default:
-                Serial.println(F("Error in waveform setting"));
+                Serial.println(F("[err]: error in waveform setting"));
                 break;                    
         } 
 
         float frequency = JSONSettings["freq"];
-        Serial.print(F("[JSONSettings[frequency]]: ")); Serial.println(frequency);
+        Serial.print(F("[JSONSettings][frequency]: ")); Serial.println(frequency);
 
         float phase     = JSONSettings["phase"];
-        Serial.print(F("[JSONSettings[phase]]: ")); Serial.println(phase);
+        Serial.print(F("[JSONSettings][phase]: ")); Serial.println(phase);
 
         gen.ApplySignal(waveType, outputRegister, frequency, 
                         outputRegister, phase);
@@ -93,7 +93,7 @@ bool currentsource_settings(void) {
 
     return 1;
 
-}
+}  
 
 int8_t monitor_serial(void) {
 
@@ -103,7 +103,7 @@ int8_t monitor_serial(void) {
         char cmd = Serial.read();
         /* if first char is indicating that settings are coming */
         if (cmd == '>') {   
-            Serial.println(F("first char received"));
+            Serial.println(F("[ser]: settings flag received"));
             while (!Serial.available()){
                 delay(5);
             }
@@ -113,15 +113,15 @@ int8_t monitor_serial(void) {
                 case 'W':
                     settingsType = 0;
                     waveform_settings();
-                    Serial.println(F("waveform_settings()"));
+                    Serial.println(F("[ser][run]: waveform_settings()"));
                     break;
                 case 'S':
                     settingsType = 1;
                     currentsource_settings();
-                    Serial.println(F("currentsource_settings()"));
+                    Serial.println(F("[ser][run]: currentsource_settings()"));
                     break;
                 default:
-                    Serial.println(F("Error in settings type"));
+                    Serial.println(F("[err]: error in settings type"));
                     break;
             }
         }
