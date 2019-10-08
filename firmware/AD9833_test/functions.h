@@ -125,9 +125,11 @@ bool currentsource_settings(void) {
         Serial.println(error.c_str());
         return;
     }
-    byte resistancePercent = JSONSettings["resPerc"];
-    if (resistancePercent <= 0) resistancePercent = 0;
-    if (resistancePercent > 99) resistancePercent = 100;
+    byte resistancePercent = 0;
+
+    if (JSONSettings["resPerc"] <= 0) resistancePercent = 0;
+    else if (JSONSettings["resPerc"] > 99) resistancePercent = 100;
+    else resistancePercent = JSONSettings["resPerc"];
     Serial.print(F("[JSONSettings][resistancePercent]: ")); Serial.println(resistancePercent);
 
     status = AD5274.command_write(AD5274_CONTROL_WRITE, AD5274_RDAC_WIPER_WRITE_ENABLE);
