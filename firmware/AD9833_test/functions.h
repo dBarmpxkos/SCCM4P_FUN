@@ -1,12 +1,14 @@
-#include <AD9833.h>        
+#include <AD9833.h>
+#include <Systronix_AD5274.h>        
 #include <ArduinoJson.h>
 
 #define FNC_PIN       10
 #define LED_PIN       13
 
 AD9833 gen(FNC_PIN);
+Systronix_AD5274 AD5274(AD5274_BASE_ADDR_FLOAT);
 
-/* helper functions */
+/* helper functions ------------------------------------------ */
 static void yield_on_char(void){
     if ( serialEventRun ) serialEventRun();
     if ( Serial.available() ) return;
@@ -23,8 +25,12 @@ static void flush_serial_input(void){
 static void blink_LED(void){
     digitalWrite(LED_PIN, digitalRead(LED_PIN) == HIGH ? LOW : HIGH);
 }
-/* helper functions */
+/* helper functions ------------------------------------------ */
 
+
+/* AD9833 functions ------------------------------------------ */
+
+/* json parser for waveform settings */
 bool waveform_settings(void) {
     StaticJsonDocument<200> JSONSettings;
 
@@ -87,14 +93,70 @@ bool waveform_settings(void) {
 
     }
 }
+/* json parser for waveform settings */
+
+/* AD9833 functions ------------------------------------------ */
 
 
+/* AD5274 functions ------------------------------------------ */
+
+/* RDAC register for resistance setting */
+int8_t write_and_read_rdac (uint16_t data_16_to_write){
+    int8_t status = 0;
+    int16_t read_from_ad5274 = 0;
+
+    status += AD5274.command_write(AD5274_RDAC_WRITE, data_16_to_write);
+    read_from_ad5274 = AD5274.command_read(AD5274_RDAC_READ, 0x00);
+    return status;
+}
+/* RDAC register for resistance setting */
+
+/* json parser for resistance settings */
 bool currentsource_settings(void) {
+    StaticJsonDocument<200> JSONSettings;
+    uint16_t data_16_to_write = 0;
+    int16_t read_from_ad5274 = 0;
 
-    return 1;
+    int8_t status = 0;
 
-}  
+    DeserializationError error = deserializeJson(JSONSettings, Serial);
+    if (error) {
+        Serial.print(F("[err]: deserializeJson() failed: "));
+        Serial.println(error.c_str());
+        return;
+    }
+    byte resistancePercent = JSONSettings["resPerc"];
+    if (resistancePercent <= 0) resistancePercent = 0;
+    if (resistancePercent > 99) resistancePercent = 100;
+    Serial.print(F("[JSONSettings][resistancePercent]: ")); Serial.println(resistancePercent);
 
+    status = AD5274.command_write(AD5274_CONTROL_WRITE, AD5274_RDAC_WIPER_WRITE_ENABLE);
+    read_from_ad5274 = AD5274.command_read(AD5274_CONTROL_READ, 0x00);
+    if (read_from_ad5274 & AD5274_RDAC_WIPER_WRITE_ENABLE){
+        Serial.print("RDAC unlock successful: ");
+        Serial.println(read_from_ad5274);
+    } 
+    else {
+        Serial.print("RDAC unlock failed: ");
+        Serial.println(read_from_ad5274);
+    }
+
+
+    data_16_to_write = map(resistancePercent, 0, 100, 0, 1023);
+    Serial.println(data_16_to_write, HEX);
+
+    status += write_and_read_rdac (data_16_to_write);
+    if (status > 0) {
+        Serial.print(" RDAC read/write errors: ");
+        Serial.println(status);
+    }
+}
+/* json parser for resistance settings */
+
+/* AD5274 functions ------------------------------------------ */
+
+
+/* top level functions ------------------------------------------ */
 int8_t monitor_serial(void) {
 
     int8_t settingsType = -1;
@@ -128,5 +190,4 @@ int8_t monitor_serial(void) {
     }
     return settingsType;
 }
-
-/* helper functions */
+/* top level functions ------------------------------------------ */

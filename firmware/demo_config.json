@@ -1,4 +1,4 @@
-{
+>W{
   "reg": 0,
   "en" : 1,
   "wave": 1,
@@ -6,4 +6,8 @@
   "ampl": 1.0,
   "phase": 0,
   "offset": 0
+}
+
+>S{
+  "resPerc": 0,
 }
