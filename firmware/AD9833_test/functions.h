@@ -3,8 +3,10 @@
 #include <ArduinoJson.h>
 
 #define FNC_PIN       10
-#define LED_PIN       13
-
+#define LED_PIN       2
+/*  D13  : SCLK
+    D11  : SDA
+*/
 AD9833 gen(FNC_PIN);
 Systronix_AD5274 AD5274(AD5274_BASE_ADDR_FLOAT);
 
@@ -127,9 +129,10 @@ bool currentsource_settings(void) {
     }
     byte resistancePercent = 0;
 
-    if (JSONSettings["resPerc"] <= 0) resistancePercent = 0;
+    if      (JSONSettings["resPerc"] <= 0) resistancePercent = 0;
     else if (JSONSettings["resPerc"] > 99) resistancePercent = 100;
-    else resistancePercent = JSONSettings["resPerc"];
+    else    resistancePercent = JSONSettings["resPerc"];
+
     Serial.print(F("[JSONSettings][resistancePercent]: ")); Serial.println(resistancePercent);
 
     status = AD5274.command_write(AD5274_CONTROL_WRITE, AD5274_RDAC_WIPER_WRITE_ENABLE);

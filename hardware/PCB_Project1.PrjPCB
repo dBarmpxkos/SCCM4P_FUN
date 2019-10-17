@@ -72,23 +72,6 @@ GenerateClassCluster=0
 DocumentUniqueId=QVJNKXVT
 
 [Document3]
-DocumentPath=Job1.OutJob
-AnnotationEnabled=1
-AnnotateStartValue=1
-AnnotationIndexControlEnabled=0
-AnnotateSuffix=
-AnnotateScope=All
-AnnotateOrder=-1
-DoLibraryUpdate=1
-DoDatabaseUpdate=1
-ClassGenCCAutoEnabled=1
-ClassGenCCAutoRoomEnabled=1
-ClassGenNCAutoScope=None
-DItemRevisionGUID=
-GenerateClassCluster=0
-DocumentUniqueId=
-
-[Document4]
 DocumentPath=fun_generator.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -105,7 +88,7 @@ DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=JDMEPDWM
 
-[Document5]
+[Document4]
 DocumentPath=digipot.PcbDoc
 AnnotationEnabled=1
 AnnotateStartValue=1
@@ -121,10 +104,6 @@ ClassGenNCAutoScope=None
 DItemRevisionGUID=
 GenerateClassCluster=0
 DocumentUniqueId=RMUEOKTD
-
-[GeneratedDocument1]
-DocumentPath=Project Outputs for PCB_Project1\Design Rule Check - fun_generator.html
-DItemRevisionGUID=
 
 [Configuration1]
 Name=Sources
