@@ -6,6 +6,7 @@ void setup(){
 	AD5274.begin();
 	gen.Begin();
 	gen.EnableOutput(false);
+	Serial.println(">");
 
 }
 
