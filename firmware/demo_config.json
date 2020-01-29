@@ -1,13 +1,14 @@
 >W{
   "reg": 0,
   "en" : 1,
-  "wave": 2,
-  "freq": 1000.00,
+  "wave": 0,
+  "freq": 10000.00,
   "ampl": 1.0,
   "phase": 0,
   "offset": 0
 }
 
+
 >S{
-  "resPerc": 0
+  "resPerc": 100
 }

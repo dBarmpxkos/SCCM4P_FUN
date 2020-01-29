@@ -44,7 +44,7 @@ def serial_init(port, device):
 device = serial_init(get_com_list(), device)
 device.write(waveformToken.encode())
 device.write(waveformSettings.encode())
-time.sleep(10)
+time.sleep()
 waveformSettings = '{"reg":0,"en":1,"wave":0,"freq":500.00,"ampl":0,"phase":0,"offset":0}'
 device.write(waveformToken.encode())
 device.write(waveformSettings.encode())

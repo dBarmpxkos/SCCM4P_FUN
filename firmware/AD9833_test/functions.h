@@ -2,8 +2,8 @@
 #include <Systronix_AD5274.h>        
 #include <ArduinoJson.h>
 
-#define FNC_PIN       10
-#define LED_PIN       2
+#define FNC_PIN       53
+#define LED_PIN       13
 /*  D13  : SCLK
     D11  : SDA
 */
